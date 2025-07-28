@@ -12,7 +12,8 @@
     {
       "platform": "BleBoxPlatform",
       "name": "SomePlatformName",
-      "NEXT_SCAN_DELAY_IN_MIN" : 0
+      "NEXT_SCAN_DELAY_IN_MIN" : 0,
+      "scanSubnets": ["192.168.10.0/24","10.0.2.0/24"],
     }
 
   ],
