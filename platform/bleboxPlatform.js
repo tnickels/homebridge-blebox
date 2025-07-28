@@ -1,4 +1,5 @@
 var os = require('os');
+const ip = require('ip');
 var communication = require("./../common/communication");
 var bleboxCommands = require("./../common/bleboxCommands");
 var getBleBoxAccessoryWrapperFactories = require("./../blebox")
@@ -45,18 +46,32 @@ class BleBoxPlatform {
         callback(accessoriesList);
     };
 
-    prepareIpListToScan() {
-        var interfaces = os.networkInterfaces();
-        for (var i in interfaces) {
-            for (var j in interfaces[i]) {
-                var netInterface = interfaces[i][j];
-                if (netInterface.family === 'IPv4' && !netInterface.internal) {
-                    this.addIpsFromInterface(netInterface);
-                    break;
-                }
-            }
-        }
-    };
+prepareIpListToScan() {
+  // 1) scan all non-internal IPv4 interfaces
+  const interfaces = os.networkInterfaces();
+  Object.values(interfaces)
+    .flat()
+    .forEach(iface => {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        this.addIpsFromInterface(iface);
+      }
+    });
+
+  // 2) scan any user-defined subnets in config.scanSubnets
+  if (Array.isArray(this.config.scanSubnets)) {
+    this.config.scanSubnets.forEach(cidr => {
+      try {
+        const subnet = ip.cidrSubnet(cidr);
+        this.addIpsFromInterface({
+          address: subnet.networkAddress,
+          netmask: subnet.subnetMask
+        });
+      } catch (e) {
+        this.log.warn(`BleBoxPlatform: invalid CIDR in scanSubnets: ${cidr}`);
+      }
+    });
+  }
+}
 
     addIpsFromInterface(netInterface) {
         var maskArray = netInterface.netmask.split('.', 4);
