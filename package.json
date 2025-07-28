@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "request": "^2.65.0",
-    "lodash": "^4.17.20"
+    "lodash": "^4.17.20",
+    "ip": "^2.0.1"
   },
   "devDependencies": {
     "homebridge": "^1.1.6"
